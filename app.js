@@ -3,7 +3,7 @@ const axios = require("axios");
 
 const app = express();
 const PORT = 9876;
-const WINDOW_SIZE = 21; 
+const WINDOW_SIZE = 21;
 
 let windowPrevState = [];
 let windowCurrState = [];
@@ -18,43 +18,34 @@ const fetchNumbers = async (numberId) => {
   }
 };
 
-
-
 const calculateAverage = (numbers) => {
   return numbers.length
     ? numbers.reduce((sum, num) => sum + num, 0) / numbers.length
     : 0;
 };
 
-app.get("/numbers/:numberId", async (req, res) => {
-  const numberId = req.params.numberId;
-  const validIds = ["p", "f", "e", "r"];
 
-  if (!validIds.includes(numberId)) {
-    return res.status(400).json({ detail: "Invalid number ID" });
-  }else{
-//     ...even ->/e
-//     ...prime ->/p
-//     ...fibb ->/f
-// ...rand->/r
+const createNumberRoute = (numberId) => {
+  app.get(`/numbers/${numberId}`, async (req, res) => {
+    const numbers = await fetchNumbers(numberId);
+    updateWindow(numbers);
+    const avg = calculateAverage(windowCurrState);
 
-
-  }
-
-  const numbers = await fetchNumbers(numberId);
-  updateWindow(numbers);
-  const avg = calculateAverage(windowCurrState);
-
-  res.json({
-    numbers,
-    windowPrevState,
-    windowCurrState,
-    avg,
+    res.json({
+      numbers,
+      windowPrevState,
+      windowCurrState,
+      avg,
+    });
   });
-});
+};
 
+
+const validIds = ["p", "f", "e", "r"];
+
+
+validIds.forEach(createNumberRoute);
 
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
-
